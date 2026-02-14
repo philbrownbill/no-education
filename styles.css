@@ -352,6 +352,40 @@ h1 {
   font-weight: 600;
 }
 
+/* Why We Keep Counting - highlight section */
+.highlight-section {
+  background: #f4f6f9;
+  padding: 32px 28px;
+  border-radius: 16px;
+  margin-top: 48px;
+  margin-bottom: 48px;
+  border-left: 6px solid #2f4fb3;
+}
+
+.highlight-section h2 {
+  margin-top: 0;
+}
+
+.highlight-section ul {
+  margin-top: 12px;
+}
+
+.highlight-section li {
+  margin-bottom: 8px;
+}
+
+.highlight-section .highlight-closing {
+  line-height: 1.9;
+}
+
+@media (max-width: 480px) {
+  .highlight-section {
+    padding: 24px 20px;
+    margin-top: 36px;
+    margin-bottom: 36px;
+  }
+}
+
 /* Button */
 .btn {
   display: inline-block;
