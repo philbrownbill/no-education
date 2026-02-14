@@ -1,0 +1,424 @@
+/* Counter theme variables */
+:root {
+  --counter-bg: #1a1a2e;
+  --counter-fg: #eaeaea;
+  --counter-border: #3d3d5c;
+}
+
+/* Test mode banner */
+.test-mode-banner {
+  font-size: 0.8rem;
+  color: #666;
+  background: #f0f0f0;
+  padding: 0.4rem 1rem;
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+}
+
+/* Reset and base */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.6;
+  color: #1a1a1a;
+  background: #fafafa;
+  min-height: 100vh;
+}
+
+main {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+/* Top navigation - sticky, high contrast */
+.topnav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--counter-bg);
+  color: var(--counter-fg);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.topnav-inner {
+  max-width: 52rem;
+  margin: 0 auto;
+  padding: 1rem 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+@media (min-width: 480px) {
+  .topnav-inner {
+    padding: 1.25rem 1.5rem;
+  }
+}
+
+.topnav .brand {
+  font-weight: 600;
+  font-size: 1.2rem;
+  color: var(--counter-fg);
+  text-decoration: none;
+}
+
+@media (min-width: 480px) {
+  .topnav .brand {
+    font-size: 1.35rem;
+  }
+}
+
+.topnav .brand:hover {
+  color: #fff;
+}
+
+.topnav .links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.topnav .links a {
+  color: var(--counter-fg);
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  font-size: 1rem;
+}
+
+@media (min-width: 480px) {
+  .topnav .links a {
+    padding: 0.6rem 1.25rem;
+    font-size: 1.05rem;
+  }
+}
+
+.topnav .links a:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.topnav .links a[aria-current="page"] {
+  background: var(--counter-fg);
+  color: var(--counter-bg);
+  font-weight: 600;
+}
+
+.topnav .links a[aria-current="page"]:hover {
+  background: #fff;
+  color: var(--counter-bg);
+}
+
+.topnav .links a:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+h1 {
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+  text-align: center;
+}
+
+.subtitle {
+  font-size: 1rem;
+  color: #666;
+  text-align: center;
+  margin: 0 0 2rem;
+}
+
+/* Counter section */
+.counter-section {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.counter {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.75rem;
+}
+
+/* Digit tiles */
+.digit-tiles {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(0.25rem, 2vw, 0.5rem);
+  line-height: 1;
+}
+
+.digit-tile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: clamp(3rem, 20vw, 120px);
+  height: clamp(4rem, 28vw, 160px);
+  font-size: clamp(2.5rem, 12vw, 6rem);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--counter-fg);
+  background: var(--counter-bg);
+  border: 2px solid var(--counter-border);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+/* Days bar - matches width of digit row */
+.days-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: clamp(0.6rem, 2vw, 1rem) clamp(1rem, 4vw, 1.5rem);
+  background: var(--counter-bg);
+  border: 2px solid var(--counter-border);
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.clock-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--counter-fg);
+}
+
+.clock-icon svg {
+  width: clamp(1.25rem, 4vw, 1.75rem);
+  height: clamp(1.25rem, 4vw, 1.75rem);
+}
+
+.days-text {
+  font-size: clamp(1rem, 4vw, 1.5rem);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--counter-fg);
+}
+
+.as-of {
+  font-size: 0.95rem;
+  color: #666;
+  margin: 1rem 0 0;
+}
+
+.status {
+  font-size: 0.75rem;
+  color: #999;
+  margin: 0.25rem 0 0.5rem;
+}
+
+.uk-status {
+  font-size: 0.85rem;
+  color: #888;
+  margin: 0.25rem 0 0;
+}
+
+.key-statement {
+  margin: 1.25rem 0 0;
+  padding: 1rem 1.25rem;
+  background: #e8eef5;
+  border-left: 4px solid #0d47a1;
+  border-radius: 0 6px 6px 0;
+  font-size: 1.05rem;
+  max-width: 36rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.debug {
+  font-size: 0.75rem;
+  color: #999;
+  margin: 0.25rem 0 0;
+}
+
+/* Content section - campaign / briefing style */
+.content-section {
+  padding-top: 2rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+.content-section .intro {
+  font-size: 1.05rem;
+  margin: 0 0 1.5rem;
+  color: #333;
+}
+
+.callout-quote {
+  margin: 0 0 2rem;
+  padding: 1.25rem 1.5rem;
+  background: #f0f4f8;
+  border-radius: 8px;
+  border: 1px solid #dde4ec;
+}
+
+.callout-quote p {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #1a1a1a;
+}
+
+.callout-quote p + p {
+  margin-top: 0.5rem;
+}
+
+.content-section h2 {
+  font-size: 1.35rem;
+  font-weight: 600;
+  margin: 2rem 0 1rem;
+  color: #1a1a1a;
+}
+
+.content-section h2:first-of-type {
+  margin-top: 0;
+}
+
+/* About page: content-section without preceding counter */
+.page-about .content-section {
+  padding-top: 0;
+  border-top: none;
+}
+
+.content-section h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 1.5rem 0 0.75rem;
+  color: #333;
+}
+
+.content-section p {
+  margin: 0 0 1rem;
+  color: #333;
+}
+
+.content-section ul,
+.content-section ol {
+  margin: 0 0 1rem;
+  padding-left: 1.5rem;
+}
+
+.content-section li {
+  margin-bottom: 0.5rem;
+}
+
+.content-section li p {
+  margin: 0.25rem 0 0;
+  padding-left: 0;
+}
+
+.fact-line {
+  margin: 1rem 0 1.5rem !important;
+  font-weight: 500;
+}
+
+/* Legal definition blockquote */
+.legal-definition {
+  margin: 1.25rem 0;
+  padding: 1.25rem 1.5rem;
+  background: #f8f9fa;
+  border-left: 4px solid #37474f;
+  border-radius: 0 6px 6px 0;
+  font-style: italic;
+}
+
+.legal-definition p {
+  margin: 0;
+  color: #37474f;
+}
+
+.legal-definition p + p {
+  margin-top: 0.75rem;
+  font-style: normal;
+}
+
+.impact-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.impact-list li {
+  padding-left: 1.5rem;
+  position: relative;
+  margin-bottom: 0.6rem;
+}
+
+.impact-list li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: #0d47a1;
+  font-weight: 700;
+}
+
+.ask-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.ask-list li {
+  padding-left: 1.5rem;
+  position: relative;
+  margin-bottom: 0.6rem;
+}
+
+.ask-list li::before {
+  content: "→";
+  position: absolute;
+  left: 0;
+  color: #0d47a1;
+  font-weight: 600;
+}
+
+/* Button */
+.btn {
+  display: inline-block;
+  padding: 14px 18px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 1rem;
+  text-decoration: none;
+  color: #fff;
+  background: var(--counter-bg);
+  border: 2px solid var(--counter-border);
+  transition: background 0.2s, transform 0.1s;
+}
+
+.btn:hover {
+  background: #0d47a1;
+  border-color: #0d47a1;
+}
+
+.btn:focus-visible {
+  outline: 2px solid #0d47a1;
+  outline-offset: 2px;
+}
+
+.btn-wrap {
+  margin: 2rem 0 0 !important;
+}
+
+@media (max-width: 480px) {
+  .btn {
+    display: block;
+    width: 100%;
+    text-align: center;
+    padding: 16px 18px;
+  }
+}
+
+/* Focus styles for accessibility */
+:focus-visible {
+  outline: 2px solid #0d47a1;
+  outline-offset: 2px;
+}
