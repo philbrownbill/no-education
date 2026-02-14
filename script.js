@@ -1,4 +1,19 @@
 /**
+ * Creates a Date representing the given UK date/time in Europe/London.
+ */
+function createUKInstant(dateStr, timeStr = "12:00") {
+  const [y, mo, d] = dateStr.split("-").map(Number);
+  const [h, min] = (timeStr || "12:00").split(":").map(Number);
+  const noonUTC = new Date(Date.UTC(y, mo - 1, d, 12, 0, 0));
+  const fmt = new Intl.DateTimeFormat("en", { timeZone: "Europe/London", hour: "numeric", hour12: false });
+  const londonHour = parseInt(fmt.format(noonUTC), 10);
+  const offsetHours = londonHour - 12;
+  const utcH = (h - offsetHours + 24) % 24;
+  const utcM = (min || 0);
+  return new Date(Date.UTC(y, mo - 1, d, utcH, utcM, 0));
+}
+
+/**
  * Test mode: parse URL params ?testDate=YYYY-MM-DD&testTime=HH:MM (Europe/London).
  * If only testDate: default time to 12:00. If only testTime: ignore (date required).
  */
@@ -7,17 +22,9 @@ function getTestInstant() {
   const testDate = params.get("testDate");
   const testTime = params.get("testTime");
   if (!testDate || !/^\d{4}-\d{2}-\d{2}$/.test(testDate)) return null;
-  const timePart = testTime || "12:00";
   const [y, mo, d] = testDate.split("-").map(Number);
-  const [h, min] = timePart.split(":").map(Number);
   if (isNaN(y) || isNaN(mo) || isNaN(d)) return null;
-  const noonUTC = new Date(Date.UTC(y, mo - 1, d, 12, 0, 0));
-  const fmt = new Intl.DateTimeFormat("en", { timeZone: "Europe/London", hour: "numeric", hour12: false });
-  const londonHour = parseInt(fmt.format(noonUTC), 10);
-  const offsetHours = londonHour - 12;
-  const utcH = (h - offsetHours + 24) % 24;
-  const utcM = (min || 0);
-  return new Date(Date.UTC(y, mo - 1, d, utcH, utcM, 0));
+  return createUKInstant(testDate, testTime || "12:00");
 }
 
 const testInstant = getTestInstant();
@@ -31,13 +38,8 @@ const testInstant = getTestInstant();
  * - manualPause: Optional { start: "YYYY-MM-DD", end: "YYYY-MM-DD" } for manual pause (inclusive), or null.
  */
 const config = {
-  initialCount: 294,
-  get baselineDate() {
-    const ukToday = getUKTodayISO();
-    const d = parseISODate(ukToday);
-    d.setDate(d.getDate() - 1);
-    return dateToISO(d);
-  },
+  initialCount: 295,
+  baselineDate: "2026-02-13",
   pausedRanges: [{ start: "2026-02-16", end: "2026-02-20" }],
   manualPause: null,
   /** If set to "YYYY-MM-DD HH:MM", used as UK time source for testing. */
@@ -45,11 +47,12 @@ const config = {
 };
 
 /**
- * Parses an ISO date string (YYYY-MM-DD) to a local-midnight Date.
+ * Parses an ISO date string (YYYY-MM-DD) to a Date at noon UTC.
+ * Noon UTC ensures the same calendar day in Europe/London (GMT or BST).
  */
 function parseISODate(str) {
   const [y, m, d] = str.split("-").map(Number);
-  return new Date(y, m - 1, d);
+  return new Date(Date.UTC(y, m - 1, d, 12, 0, 0));
 }
 
 /**
@@ -57,12 +60,13 @@ function parseISODate(str) {
  * Europe/London handles BST (British Summer Time) automatically—no manual DST logic needed.
  * @param {Date} [date=new Date()] - The instant to resolve in UK time (use config.testNowUK for testing).
  */
-function getUKParts(date = new Date()) {
-  let instant = testInstant || date;
-  if (config.testNowUK && !testInstant) {
+function getUKParts(overrideInstant = null) {
+  let instant = overrideInstant || testInstant;
+  if (!instant && config.testNowUK) {
     const [datePart, timePart] = config.testNowUK.split(" ");
     instant = new Date(`${datePart}T${timePart || "00:00"}:00`);
   }
+  if (!instant) instant = new Date();
   const formatter = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Europe/London",
     year: "numeric",
@@ -84,25 +88,26 @@ function getUKParts(date = new Date()) {
   };
 }
 
-function getUKTodayISO(date = new Date()) {
-  const p = getUKParts(date);
+function getUKTodayISO(overrideInstant = null) {
+  const p = getUKParts(overrideInstant);
   return `${String(p.year)}-${String(p.month).padStart(2, "0")}-${String(p.day).padStart(2, "0")}`;
 }
 
 /**
- * Converts a Date to YYYY-MM-DD (for date arithmetic results).
+ * Converts a Date to YYYY-MM-DD using UTC (for UK date arithmetic).
  */
 function dateToISO(date) {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+  return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}-${String(date.getUTCDate()).padStart(2, "0")}`;
 }
 
 /**
  * Returns the effective end date for counting and whether today is counted.
  * Before 15:30 UK: today has not finished, effectiveEnd = UK yesterday.
  * At/after 15:30 UK: today is counted, effectiveEnd = UK today.
+ * @param {Date} [instant] - Override instant (for selftest); uses testInstant or now if omitted.
  */
-function getEffectiveEndAndStatus() {
-  const p = getUKParts();
+function getEffectiveEndAndStatus(overrideInstant = null) {
+  const p = getUKParts(overrideInstant);
   const ukTodayISO = `${String(p.year)}-${String(p.month).padStart(2, "0")}-${String(p.day).padStart(2, "0")}`;
   const shouldCountToday = p.hour > 15 || (p.hour === 15 && p.minute >= 30);
 
@@ -111,7 +116,7 @@ function getEffectiveEndAndStatus() {
     effectiveEndISO = ukTodayISO;
   } else {
     const d = parseISODate(ukTodayISO);
-    d.setDate(d.getDate() - 1);
+    d.setUTCDate(d.getUTCDate() - 1);
     effectiveEndISO = dateToISO(d);
   }
 
@@ -134,11 +139,11 @@ function formatLocalDate(date) {
 }
 
 /**
- * Returns true if the date is a weekday (Mon–Fri).
+ * Returns true if the date is a weekday (Mon–Fri) in Europe/London.
  */
 function isWeekday(date) {
-  const day = date.getDay();
-  return day >= 1 && day <= 5;
+  const wd = new Intl.DateTimeFormat("en", { timeZone: "Europe/London", weekday: "short" }).format(date);
+  return wd !== "Sat" && wd !== "Sun";
 }
 
 /**
@@ -171,8 +176,8 @@ function countEffectiveWeekdays(baselineISO, effectiveEndDate, pausedRanges) {
 
   let count = 0;
   const current = new Date(baseline);
-  current.setDate(current.getDate() + 1);
-  current.setHours(0, 0, 0, 0);
+  current.setUTCDate(current.getUTCDate() + 1);
+  current.setUTCHours(12, 0, 0, 0);
 
   const endTime = effectiveEndDate.getTime();
 
@@ -180,7 +185,7 @@ function countEffectiveWeekdays(baselineISO, effectiveEndDate, pausedRanges) {
     if (isWeekday(current) && !isInRanges(current, ranges)) {
       count++;
     }
-    current.setDate(current.getDate() + 1);
+    current.setUTCDate(current.getUTCDate() + 1);
   }
 
   return count;
@@ -248,6 +253,43 @@ function updateCounter() {
     const banner = document.getElementById("test-mode-banner");
     if (banner) banner.style.display = "none";
   }
+}
+
+/**
+ * Computes total for a given UK instant (uses same code paths as UI).
+ */
+function computeTotalForInstant(instant) {
+  const { effectiveEndISO } = getEffectiveEndAndStatus(instant);
+  const effectiveEndDate = parseISODate(effectiveEndISO);
+  const added = countEffectiveWeekdays(config.baselineDate, effectiveEndDate, config.pausedRanges);
+  return config.initialCount + added;
+}
+
+/**
+ * Self-test harness: runs when URL includes ?selftest=1.
+ */
+function runSelftest() {
+  const cases = [
+    { testDate: "2026-02-13", testTime: "16:00", expected: 295 },
+    { testDate: "2026-02-16", testTime: "16:00", expected: 295 },
+    { testDate: "2026-02-23", testTime: "16:00", expected: 296 },
+    { testDate: "2026-02-24", testTime: "16:00", expected: 297 },
+    { testDate: "2026-02-25", testTime: "16:00", expected: 298 }
+  ];
+  console.log("Selftest: baseline=2026-02-13, initial=295, pausedRanges=2026-02-16..2026-02-20");
+  let passed = 0;
+  for (const c of cases) {
+    const instant = createUKInstant(c.testDate, c.testTime);
+    const total = computeTotalForInstant(instant);
+    const ok = total === c.expected;
+    if (ok) passed++;
+    console.log(`${ok ? "PASS" : "FAIL"} testDate=${c.testDate} testTime=${c.testTime} => total=${total} (expected ${c.expected})`);
+  }
+  console.log(`Selftest: ${passed}/${cases.length} passed`);
+}
+
+if (new URLSearchParams(window.location.search).get("selftest") === "1") {
+  runSelftest();
 }
 
 // Run on load
