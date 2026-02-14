@@ -101,10 +101,10 @@ function dateToISO(date) {
 }
 
 /**
- * Returns the effective end date for counting and whether today is counted.
+ * Returns the effective end date for counting.
  * Before 15:30 UK: today has not finished, effectiveEnd = UK yesterday.
  * At/after 15:30 UK: today is counted, effectiveEnd = UK today.
- * @param {Date} [instant] - Override instant (for selftest); uses testInstant or now if omitted.
+ * @param {Date} [overrideInstant] - Override instant (for testDate/testTime); uses testInstant or now if omitted.
  */
 function getEffectiveEndAndStatus(overrideInstant = null) {
   const p = getUKParts(overrideInstant);
@@ -120,12 +120,7 @@ function getEffectiveEndAndStatus(overrideInstant = null) {
     effectiveEndISO = dateToISO(d);
   }
 
-  const timeStr = `${String(p.hour).padStart(2, "0")}:${String(p.minute).padStart(2, "0")}`;
-  const status = shouldCountToday
-    ? `UK time now: ${timeStr} — Today counted.`
-    : `UK time now: ${timeStr} — Next increment at 15:30 (UK).`;
-
-  return { effectiveEndISO, status };
+  return { effectiveEndISO };
 }
 
 /**
@@ -195,21 +190,14 @@ function countEffectiveWeekdays(baselineISO, effectiveEndDate, pausedRanges) {
  * Updates the counter display.
  */
 function updateCounter() {
-  const p = getUKParts();
-  const { effectiveEndISO, status } = getEffectiveEndAndStatus();
-  const shouldCountToday = p.hour > 15 || (p.hour === 15 && p.minute >= 30);
-  const ranges = [...config.pausedRanges];
-  if (config.manualPause) ranges.push(config.manualPause);
+  const { effectiveEndISO } = getEffectiveEndAndStatus();
   const effectiveEndDate = parseISODate(effectiveEndISO);
-  const isPausedEffectiveDay = isInRanges(effectiveEndDate, ranges);
-
   const baseline = config.baselineDate;
   const added = countEffectiveWeekdays(baseline, effectiveEndDate, config.pausedRanges);
   const total = config.initialCount + added;
 
   const digitTiles = document.getElementById("digitTiles");
   const asOfEl = document.getElementById("as-of");
-  const debugEl = document.getElementById("debug");
 
   if (digitTiles) {
     digitTiles.innerHTML = String(total).split("").map((d) => `<span class="digit-tile">${d}</span>`).join("");
@@ -222,74 +210,6 @@ function updateCounter() {
     counterEl.setAttribute("aria-label", `${total} school days without suitable education`);
   }
   if (asOfEl) asOfEl.textContent = `As of ${effectiveEndISO} — ${total} school days (counts update after 15:30 UK time).`;
-  const statusLineEl = document.getElementById("statusLine");
-  if (statusLineEl) {
-    const timeStr = `${String(p.hour).padStart(2, "0")}:${String(p.minute).padStart(2, "0")}`;
-    statusLineEl.textContent = `UK now: ${timeStr} | Today counted: ${shouldCountToday ? "yes" : "no"} | Effective end: ${effectiveEndISO} | Paused effective day: ${isPausedEffectiveDay ? "yes" : "no"} | initial=${config.initialCount} | added=${added} | total=${total}`;
-  }
-  const statusEl = document.getElementById("uk-status");
-  if (statusEl) statusEl.textContent = status;
-  if (debugEl) {
-    const showDebug = new URLSearchParams(window.location.search).get("debug") === "1";
-    debugEl.textContent = showDebug
-      ? `Debug: baseline=${config.baselineDate}, initial=${config.initialCount}, added=${added}, total=${total}, effectiveEnd=${effectiveEndISO}`
-      : "";
-    debugEl.style.display = showDebug ? "" : "none";
-  }
-
-  if (testInstant) {
-    const p = getUKParts(testInstant);
-    const display = `${String(p.year)}-${String(p.month).padStart(2, "0")}-${String(p.day).padStart(2, "0")} ${String(p.hour).padStart(2, "0")}:${String(p.minute).padStart(2, "0")}`;
-    let banner = document.getElementById("test-mode-banner");
-    if (!banner) {
-      banner = document.createElement("div");
-      banner.id = "test-mode-banner";
-      banner.className = "test-mode-banner";
-      document.body.insertBefore(banner, document.body.firstChild);
-    }
-    banner.textContent = `TEST MODE — using UK time: ${display}`;
-    banner.style.display = "";
-  } else {
-    const banner = document.getElementById("test-mode-banner");
-    if (banner) banner.style.display = "none";
-  }
-}
-
-/**
- * Computes total for a given UK instant (uses same code paths as UI).
- */
-function computeTotalForInstant(instant) {
-  const { effectiveEndISO } = getEffectiveEndAndStatus(instant);
-  const effectiveEndDate = parseISODate(effectiveEndISO);
-  const added = countEffectiveWeekdays(config.baselineDate, effectiveEndDate, config.pausedRanges);
-  return config.initialCount + added;
-}
-
-/**
- * Self-test harness: runs when URL includes ?selftest=1.
- */
-function runSelftest() {
-  const cases = [
-    { testDate: "2026-02-13", testTime: "16:00", expected: 295 },
-    { testDate: "2026-02-16", testTime: "16:00", expected: 295 },
-    { testDate: "2026-02-23", testTime: "16:00", expected: 296 },
-    { testDate: "2026-02-24", testTime: "16:00", expected: 297 },
-    { testDate: "2026-02-25", testTime: "16:00", expected: 298 }
-  ];
-  console.log("Selftest: baseline=2026-02-13, initial=295, pausedRanges=2026-02-16..2026-02-20");
-  let passed = 0;
-  for (const c of cases) {
-    const instant = createUKInstant(c.testDate, c.testTime);
-    const total = computeTotalForInstant(instant);
-    const ok = total === c.expected;
-    if (ok) passed++;
-    console.log(`${ok ? "PASS" : "FAIL"} testDate=${c.testDate} testTime=${c.testTime} => total=${total} (expected ${c.expected})`);
-  }
-  console.log(`Selftest: ${passed}/${cases.length} passed`);
-}
-
-if (new URLSearchParams(window.location.search).get("selftest") === "1") {
-  runSelftest();
 }
 
 // Run on load

@@ -5,16 +5,6 @@
   --counter-border: #3d3d5c;
 }
 
-/* Test mode banner */
-.test-mode-banner {
-  font-size: 0.8rem;
-  color: #666;
-  background: #f0f0f0;
-  padding: 0.4rem 1rem;
-  text-align: center;
-  border-bottom: 1px solid #ddd;
-}
-
 /* Reset and base */
 *, *::before, *::after {
   box-sizing: border-box;
@@ -212,18 +202,6 @@ h1 {
   margin: 1rem 0 0;
 }
 
-.status {
-  font-size: 0.75rem;
-  color: #999;
-  margin: 0.25rem 0 0.5rem;
-}
-
-.uk-status {
-  font-size: 0.85rem;
-  color: #888;
-  margin: 0.25rem 0 0;
-}
-
 .key-statement {
   margin: 1.25rem 0 0;
   padding: 1rem 1.25rem;
@@ -234,12 +212,6 @@ h1 {
   max-width: 36rem;
   margin-left: auto;
   margin-right: auto;
-}
-
-.debug {
-  font-size: 0.75rem;
-  color: #999;
-  margin: 0.25rem 0 0;
 }
 
 /* Content section - campaign / briefing style */
