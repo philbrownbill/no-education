@@ -33,7 +33,10 @@ const testInstant = getTestInstant();
 const config = {
   initialCount: 294,
   get baselineDate() {
-    return getUKTodayISO();
+    const ukToday = getUKTodayISO();
+    const d = parseISODate(ukToday);
+    d.setDate(d.getDate() - 1);
+    return dateToISO(d);
   },
   pausedRanges: [{ start: "2026-02-16", end: "2026-02-20" }],
   manualPause: null,
@@ -153,14 +156,15 @@ function isInRanges(date, ranges) {
 }
 
 /**
- * Counts weekdays from the day after baselineDate to endDate (inclusive).
- * baselineDate is the date when the count was exactly initialCount, so we start counting the next day.
+ * Counts weekdays from the day after baseline to effectiveEndDate (inclusive).
+ * baseline is the date when the count was exactly initialCount.
  * Excludes any days that fall within paused ranges.
+ * @param {string} baselineISO - Baseline date (YYYY-MM-DD).
+ * @param {Date} effectiveEndDate - Effective end date (Date object from effectiveEndISO).
  */
-function countWeekdaysSinceBaseline(baselineDateStr, endDateStr, pausedRanges) {
-  const baseline = parseISODate(baselineDateStr);
-  const end = parseISODate(endDateStr);
-  if (end <= baseline) return 0;
+function countEffectiveWeekdays(baselineISO, effectiveEndDate, pausedRanges) {
+  const baseline = parseISODate(baselineISO);
+  if (effectiveEndDate <= baseline) return 0;
 
   const ranges = [...pausedRanges];
   if (config.manualPause) ranges.push(config.manualPause);
@@ -170,7 +174,7 @@ function countWeekdaysSinceBaseline(baselineDateStr, endDateStr, pausedRanges) {
   current.setDate(current.getDate() + 1);
   current.setHours(0, 0, 0, 0);
 
-  const endTime = end.getTime();
+  const endTime = effectiveEndDate.getTime();
 
   while (current.getTime() <= endTime) {
     if (isWeekday(current) && !isInRanges(current, ranges)) {
@@ -191,44 +195,39 @@ function updateCounter() {
   const shouldCountToday = p.hour > 15 || (p.hour === 15 && p.minute >= 30);
   const ranges = [...config.pausedRanges];
   if (config.manualPause) ranges.push(config.manualPause);
-  const isPausedEffectiveDay = isInRanges(parseISODate(effectiveEndISO), ranges);
+  const effectiveEndDate = parseISODate(effectiveEndISO);
+  const isPausedEffectiveDay = isInRanges(effectiveEndDate, ranges);
 
-  const computedAddedWeekdays = countWeekdaysSinceBaseline(
-    config.baselineDate,
-    effectiveEndISO,
-    config.pausedRanges
-  );
-  const total = config.initialCount + computedAddedWeekdays;
+  const baseline = config.baselineDate;
+  const added = countEffectiveWeekdays(baseline, effectiveEndDate, config.pausedRanges);
+  const total = config.initialCount + added;
 
   const digitTiles = document.getElementById("digitTiles");
   const asOfEl = document.getElementById("as-of");
   const debugEl = document.getElementById("debug");
 
   if (digitTiles) {
-    const digits = String(total).split("");
-    digitTiles.innerHTML = digits
-      .map((d) => `<span class="digit-tile">${d}</span>`)
-      .join("");
+    digitTiles.innerHTML = String(total).split("").map((d) => `<span class="digit-tile">${d}</span>`).join("");
   }
-  document.querySelectorAll(".day-count").forEach((el) => {
+  document.querySelectorAll(".day-count, .count-inline").forEach((el) => {
     el.textContent = String(total);
   });
   const counterEl = document.querySelector(".counter[role='status']");
   if (counterEl) {
     counterEl.setAttribute("aria-label", `${total} school days without suitable education`);
   }
-  if (asOfEl) asOfEl.textContent = `As of ${effectiveEndISO} (counts update after 15:30 UK time).`;
+  if (asOfEl) asOfEl.textContent = `As of ${effectiveEndISO} — ${total} school days (counts update after 15:30 UK time).`;
   const statusLineEl = document.getElementById("statusLine");
   if (statusLineEl) {
     const timeStr = `${String(p.hour).padStart(2, "0")}:${String(p.minute).padStart(2, "0")}`;
-    statusLineEl.textContent = `UK now: ${timeStr} | Today counted: ${shouldCountToday ? "yes" : "no"} | Effective end: ${effectiveEndISO} | Paused effective day: ${isPausedEffectiveDay ? "yes" : "no"}`;
+    statusLineEl.textContent = `UK now: ${timeStr} | Today counted: ${shouldCountToday ? "yes" : "no"} | Effective end: ${effectiveEndISO} | Paused effective day: ${isPausedEffectiveDay ? "yes" : "no"} | initial=${config.initialCount} | added=${added} | total=${total}`;
   }
   const statusEl = document.getElementById("uk-status");
   if (statusEl) statusEl.textContent = status;
   if (debugEl) {
     const showDebug = new URLSearchParams(window.location.search).get("debug") === "1";
     debugEl.textContent = showDebug
-      ? `Debug: baseline=${config.baselineDate}, initial=${config.initialCount}, added=${computedAddedWeekdays}, total=${total}, effectiveEnd=${effectiveEndISO}`
+      ? `Debug: baseline=${config.baselineDate}, initial=${config.initialCount}, added=${added}, total=${total}, effectiveEnd=${effectiveEndISO}`
       : "";
     debugEl.style.display = showDebug ? "" : "none";
   }
