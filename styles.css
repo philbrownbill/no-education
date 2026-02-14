@@ -203,21 +203,46 @@ h1 {
 }
 
 .key-statement {
-  margin: 1.25rem 0 0;
-  padding: 1rem 1.25rem;
+  margin: 1.25rem 0 28px;
+  padding: 18px 20px;
   background: #e8eef5;
   border-left: 4px solid #0d47a1;
   border-radius: 0 6px 6px 0;
   font-size: 1.05rem;
+  line-height: 1.6;
   max-width: 36rem;
   margin-left: auto;
   margin-right: auto;
+}
+
+@media (max-width: 480px) {
+  .key-statement {
+    padding: 14px 16px;
+  }
+}
+
+.key-statement p {
+  margin: 0;
+}
+
+.key-statement p + p {
+  margin-top: 0.5rem;
 }
 
 /* Content section - campaign / briefing style */
 .content-section {
   padding-top: 2rem;
   border-top: 1px solid #e0e0e0;
+  margin-top: 18px;
+}
+
+.counter-section + .content-section {
+  padding-top: 0.25rem;
+  margin-top: 0;
+}
+
+main .counter-section {
+  margin-bottom: 0;
 }
 
 .content-section .intro {
@@ -248,7 +273,7 @@ h1 {
 .content-section h2 {
   font-size: 1.35rem;
   font-weight: 600;
-  margin: 2rem 0 1rem;
+  margin: 18px 0 10px;
   color: #1a1a1a;
 }
 
@@ -270,18 +295,18 @@ h1 {
 }
 
 .content-section p {
-  margin: 0 0 1rem;
+  margin: 10px 0;
   color: #333;
 }
 
 .content-section ul,
 .content-section ol {
-  margin: 0 0 1rem;
+  margin: 10px 0 14px 20px;
   padding-left: 1.5rem;
 }
 
 .content-section li {
-  margin-bottom: 0.5rem;
+  margin: 6px 0;
 }
 
 .content-section li p {
@@ -312,6 +337,24 @@ h1 {
 .legal-definition p + p {
   margin-top: 0.75rem;
   font-style: normal;
+}
+
+/* Section 19(6) quotation - softer styling, no left border */
+.legal-quote {
+  margin: 1.25rem 0;
+  padding: 1.25rem 1.75rem;
+  background: #f8f9fa;
+  border-radius: 0 6px 6px 0;
+}
+
+.legal-quote p {
+  margin: 0;
+  color: #37474f;
+}
+
+.legal-quote p + p {
+  margin-top: 0.75rem;
+  font-style: italic;
 }
 
 .impact-list {
@@ -352,38 +395,9 @@ h1 {
   font-weight: 600;
 }
 
-/* Why We Keep Counting - highlight section */
-.highlight-section {
-  background: #f4f6f9;
-  padding: 32px 28px;
-  border-radius: 16px;
-  margin-top: 48px;
-  margin-bottom: 48px;
-  border-left: 6px solid #2f4fb3;
-}
-
-.highlight-section h2 {
-  margin-top: 0;
-}
-
-.highlight-section ul {
-  margin-top: 12px;
-}
-
-.highlight-section li {
-  margin-bottom: 8px;
-}
-
-.highlight-section .highlight-closing {
-  line-height: 1.9;
-}
-
-@media (max-width: 480px) {
-  .highlight-section {
-    padding: 24px 20px;
-    margin-top: 36px;
-    margin-bottom: 36px;
-  }
+/* Why We Keep Counting - normal section, no card styling */
+#why-we-keep-counting {
+  margin-bottom: 24px;
 }
 
 /* Button */
