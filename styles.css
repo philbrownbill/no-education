@@ -500,3 +500,28 @@ main .counter-section {
   outline: 2px solid #0d47a1;
   outline-offset: 2px;
 }
+
+.site-footer {
+  margin-top: 3rem;
+  padding: 2rem 1.5rem;
+  background: #f0f2f5;
+  border-top: 1px solid #e0e0e0;
+}
+
+.footer-inner {
+  max-width: 42rem;
+  margin: 0 auto;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.site-footer a {
+  color: #0d47a1;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.site-footer a:hover {
+  text-decoration: underline;
+}
